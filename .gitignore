@@ -1,0 +1,22 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Next.js
+.next/
+out/
+build/
+
+# Rust / Cargo
+target/
+Cargo.lock
+
+# Tauri / Frontend dist
+dist/
+dist-ssr/
+
+# OS / Editor
+.DS_Store
+.vscode/
+*.swp

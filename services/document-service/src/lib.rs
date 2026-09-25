@@ -1,7 +1,7 @@
 use crypto_core::{encrypt_document_aes256gcm, hash_document_sha3_256};
 use identity_core::CryptographicIdentityPublic;
 use pqcrypto_kyber::kyber768;
-use pqcrypto_traits::kem::{PublicKey, SharedSecret};
+use pqcrypto_traits::kem::{Ciphertext, PublicKey, SharedSecret};
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

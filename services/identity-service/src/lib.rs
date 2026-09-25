@@ -1,7 +1,5 @@
 use chrono::{DateTime, Utc};
-use identity_core::{generate_ml_dsa_keypair, generate_ml_kem_keypair, CryptographicIdentityPublic, KeyStatus};
-use pqcrypto_dilithium::dilithium3::{PublicKey as DsaPk, SecretKey as DsaSk};
-use pqcrypto_kyber::kyber768::{PublicKey as KemPk, SecretKey as KemSk};
+use identity_core::{generate_ml_dsa_keypair, generate_ml_kem_keypair, CryptographicIdentityPublic, KeyStatus, KemSecretKey, DsaSecretKey};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -28,8 +26,8 @@ pub struct User {
 
 /// Represents the protected private keys (Never leaves protected storage)
 pub struct ProtectedKeystore {
-    pub kem_secret: KemSk,
-    pub dsa_secret: DsaSk,
+    pub kem_secret: KemSecretKey,
+    pub dsa_secret: DsaSecretKey,
 }
 
 pub struct IdentityManager {

@@ -1,7 +1,7 @@
 use pqcrypto_kyber::kyber768;
 use pqcrypto_dilithium::dilithium3;
-use pqcrypto_traits::sign::{PublicKey as SignPublicKey, SecretKey as SignSecretKey};
-use pqcrypto_traits::kem::{PublicKey as KemPublicKey, SecretKey as KemSecretKey};
+pub use pqcrypto_kyber::kyber768::{PublicKey as KemPublicKey, SecretKey as KemSecretKey};
+pub use pqcrypto_dilithium::dilithium3::{PublicKey as DsaPublicKey, SecretKey as DsaSecretKey};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

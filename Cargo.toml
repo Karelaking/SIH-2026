@@ -3,5 +3,7 @@ resolver = "2"
 members = [
     "apps/web-console/src-tauri",
     "packages/identity-core",
-    "services/identity-service"
+    "services/identity-service",
+    "packages/crypto-core",
+    "services/document-service"
 ]

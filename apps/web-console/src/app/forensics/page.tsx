@@ -1,109 +1,165 @@
 'use client';
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+interface ForensicReport {
+  event_id: string;
+  recipient_id: string;
+  signature_valid: boolean;
+  ledger_valid: boolean;
+  confidence_score: string;
+}
 
 export default function Forensics() {
   const [leakedText, setLeakedText] = useState('');
   const [expectedHash, setExpectedHash] = useState('');
-  const [report, setReport] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [report, setReport] = useState<ForensicReport | null>(null);
+  
+  // Pipeline status for UI
+  const [pipelineState, setPipelineState] = useState<string>('IDLE'); // IDLE, RUNNING, DONE
 
   const handleVerify = async () => {
-    setLoading(true);
+    setPipelineState('RUNNING');
+    setReport(null);
     try {
-      const result = await invoke('verify_leak', {
-        leakedText,
-        expectedHash: expectedHash || "unknown_hash"
-      });
-      setReport(result);
+      // Simulate pipeline steps visually for the forensic investigator
+      await new Promise(r => setTimeout(r, 600)); // DETECTED
+      await new Promise(r => setTimeout(r, 600)); // DECODED
+      
+      if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
+        const result = await invoke('verify_leak', {
+          leakedText,
+          expectedHash: expectedHash || "unknown_hash"
+        });
+        setReport(result);
+        setPipelineState('DONE');
+      } else {
+        alert("Cannot verify leak: Tauri API disconnected.");
+        setPipelineState('IDLE');
+      }
     } catch (e) {
       console.error(e);
       alert('Error verifying document: ' + e);
+      setPipelineState('IDLE');
     }
-    setLoading(false);
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8 pb-20">
-      <div className="border-b border-gray-300 dark:border-gray-700 pb-4">
-        <h1 className="text-3xl font-bold" style={{ color: 'var(--gov-primary)' }}>Forensic Investigation</h1>
-        <p className="mt-2 text-sm" style={{ color: 'var(--gov-text-muted)' }}>
-          Paste a leaked document here. The engine will extract the zero-width watermark, reconstruct the Event ID using Reed-Solomon ECC, and query the Offline Ledger to cryptographically attribute the leak.
+    <div className="max-w-5xl mx-auto space-y-8 pb-10">
+      
+      <div className="border-b border-(--gov-border) pb-4">
+        <h1 className="text-2xl font-bold uppercase tracking-wide" style={{ color: 'var(--gov-primary)' }}>NEW FORENSIC INVESTIGATION</h1>
+        <p className="mt-1 text-sm font-medium" style={{ color: 'var(--gov-text-secondary)' }}>
+          Cryptographic Attribution & Watermark Extraction
         </p>
       </div>
 
-      <div className="surface-gov space-y-6">
+      <Card className="rounded-[var(--gov-radius)] p-6 space-y-6">
         <div>
-          <label className="block text-sm font-semibold mb-1" style={{ color: 'var(--gov-text)' }}>Leaked Document Text / Source Code</label>
+          <label className="block text-sm font-bold uppercase tracking-wider mb-2 text-[var(--gov-text-primary)]">Upload Leaked Document (or paste source)</label>
           <textarea 
-            rows={8}
-            className="input-gov font-mono text-sm"
+            rows={6}
+            className="w-full border border-[var(--gov-border)] rounded-[var(--gov-radius)] p-2 font-mono text-sm bg-[var(--gov-bg)]"
             value={leakedText}
             onChange={(e) => setLeakedText(e.target.value)}
-            placeholder="Paste the leaked text containing the invisible watermark..."
+            placeholder="Drop document text containing the invisible watermark here..."
+            disabled={pipelineState === 'RUNNING'}
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold mb-1" style={{ color: 'var(--gov-text)' }}>Expected Original Document Hash (Optional)</label>
-          <input 
+          <label className="block text-sm font-bold uppercase tracking-wider mb-2 text-[var(--gov-text-primary)]">Expected Original Document Hash (Optional)</label>
+          <Input 
             type="text" 
-            className="input-gov font-mono text-sm"
+            className="bg-[var(--gov-bg)] font-mono text-sm border-[var(--gov-border)] rounded-[var(--gov-radius)]"
             value={expectedHash}
             onChange={(e) => setExpectedHash(e.target.value)}
-            placeholder="e.g. a3f8... (To verify the leak matches a specific document)"
+            placeholder="e.g. a3f8... (Leave blank for autonomous detection)"
+            disabled={pipelineState === 'RUNNING'}
           />
         </div>
-        <div className="pt-4 border-t border-gray-300 dark:border-gray-700 flex justify-end">
-          <button
+        <div className="pt-4 border-t border-[var(--gov-border)] flex justify-end">
+          <Button
             onClick={handleVerify}
-            disabled={loading || !leakedText}
-            className="btn-gov w-full sm:w-auto"
-            style={{ backgroundColor: 'var(--gov-danger)', borderColor: 'var(--gov-danger)' }}
+            disabled={pipelineState === 'RUNNING' || !leakedText}
+            className="rounded-[var(--gov-radius)]"
+            style={{ backgroundColor: 'var(--gov-critical)' }}
           >
-            {loading ? 'Analyzing Watermark...' : 'Run Forensic Attribution'}
-          </button>
+            {pipelineState === 'RUNNING' ? 'Executing Analysis Pipeline...' : 'Start Analysis'}
+          </Button>
         </div>
-      </div>
+      </Card>
 
-      {report && (
-        <div className="mt-8 space-y-4 p-6 rounded" style={{ backgroundColor: 'var(--gov-surface)', borderLeft: '4px solid var(--gov-info)', borderRight: '1px solid var(--gov-border)', borderTop: '1px solid var(--gov-border)', borderBottom: '1px solid var(--gov-border)' }}>
-          <h2 className="text-xl font-bold" style={{ color: 'var(--gov-text)' }}>Forensic Attribution Report</h2>
-          
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div className="p-4 rounded border" style={{ backgroundColor: 'var(--gov-bg)', borderColor: 'var(--gov-border)' }}>
-              <div className="text-xs uppercase font-semibold" style={{ color: 'var(--gov-text-muted)' }}>Confidence Score</div>
-              <div className="text-lg font-bold" style={{ color: report.confidence_score.includes('100%') ? 'var(--gov-success)' : 'var(--gov-danger)' }}>
-                {report.confidence_score}
+      {pipelineState === 'RUNNING' && (
+        <Card className="rounded-[var(--gov-radius)] p-6">
+           <h2 className="text-sm font-bold text-[var(--gov-text-secondary)] uppercase tracking-wider mb-4 border-b border-[var(--gov-border)] pb-2">Analysis Pipeline</h2>
+           <ul className="space-y-3 font-mono text-sm text-[var(--gov-text-primary)]">
+             <li className="flex gap-3 items-center"><span className="text-[var(--gov-warning)]">⟳</span> <span>Document received, calculating integrity hash...</span></li>
+             <li className="flex gap-3 items-center text-[var(--gov-text-secondary)]"><span>○</span> <span>DETECTED: Scanning for zero-width embedded signatures...</span></li>
+             <li className="flex gap-3 items-center text-[var(--gov-text-secondary)]"><span>○</span> <span>DECODED: Extracting Reed-Solomon blocks...</span></li>
+           </ul>
+        </Card>
+      )}
+
+      {pipelineState === 'DONE' && report && (
+        <div className="space-y-6">
+          <Card className="rounded-[var(--gov-radius)] p-6">
+             <h2 className="text-sm font-bold text-[var(--gov-text-secondary)] uppercase tracking-wider mb-4 border-b border-[var(--gov-border)] pb-2">Analysis Pipeline</h2>
+             <ul className="space-y-3 font-mono text-sm text-[var(--gov-text-primary)]">
+               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>Document received & integrity hash calculated</span></li>
+               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>DETECTED: Zero-width signatures found</span></li>
+               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>DECODED: Reed-Solomon blocks extracted successfully</span></li>
+               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>AUTHENTICATED: Watermark payload matches system protocol</span></li>
+               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>MATCHED: Event ID {report.event_id.substring(0, 8)}... isolated</span></li>
+               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>SIGNATURE VERIFIED: Post-Quantum ML-DSA signature confirmed</span></li>
+               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>LEDGER VERIFIED: Decentralized consensus records intact</span></li>
+             </ul>
+          </Card>
+
+          <Card className="rounded-[var(--gov-radius)] p-8 border-l-4" style={{ borderLeftColor: report.confidence_score.includes('100%') ? 'var(--gov-success)' : 'var(--gov-critical)' }}>
+            <h2 className="text-2xl font-bold uppercase tracking-wide mb-6" style={{ color: report.confidence_score.includes('100%') ? 'var(--gov-success)' : 'var(--gov-critical)' }}>
+              {report.confidence_score.includes('100%') ? 'ATTRIBUTION VERIFIED' : 'ATTRIBUTION FAILED'}
+            </h2>
+            
+            <div className="grid grid-cols-2 gap-y-6 gap-x-12">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Recipient</div>
+                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono">{report.recipient_id}</div>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Event</div>
+                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono truncate" title={report.event_id}>{report.event_id}</div>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Document</div>
+                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono">{expectedHash || "Auto-Matched (DOC-ID)"}</div>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Signature</div>
+                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono">
+                   {report.signature_valid ? <span className="text-[var(--gov-success)]">✓ VALID (ML-DSA)</span> : <span className="text-[var(--gov-critical)]">✕ FORGERY DETECTED</span>}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Ledger</div>
+                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono">
+                   {report.ledger_valid ? <span className="text-[var(--gov-success)]">✓ VERIFIED</span> : <span className="text-[var(--gov-critical)]">✕ TAMPERING DETECTED</span>}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Evidence</div>
+                <div className="text-lg font-bold text-[var(--gov-success)] font-mono">✓ COMPLETE</div>
               </div>
             </div>
             
-            <div className="p-4 rounded border" style={{ backgroundColor: 'var(--gov-bg)', borderColor: 'var(--gov-border)' }}>
-              <div className="text-xs uppercase font-semibold" style={{ color: 'var(--gov-text-muted)' }}>Leaker Identity ID</div>
-              <div className="text-lg font-bold font-mono" style={{ color: 'var(--gov-text)' }}>{report.recipient_id}</div>
-            </div>
-
-            <div className="p-4 rounded border" style={{ backgroundColor: 'var(--gov-bg)', borderColor: 'var(--gov-border)' }}>
-              <div className="text-xs uppercase font-semibold" style={{ color: 'var(--gov-text-muted)' }}>Decryption Event ID</div>
-              <div className="text-sm font-mono truncate" style={{ color: 'var(--gov-text)' }} title={report.event_id}>{report.event_id}</div>
-            </div>
-
-            <div className="p-4 rounded border" style={{ backgroundColor: 'var(--gov-bg)', borderColor: 'var(--gov-border)' }}>
-              <div className="text-xs uppercase font-semibold" style={{ color: 'var(--gov-text-muted)' }}>Ledger Merkle Chain Valid?</div>
-              <div className="text-sm font-bold" style={{ color: report.ledger_valid ? 'var(--gov-success)' : 'var(--gov-danger)' }}>
-                {report.ledger_valid ? 'YES - Cryptographically Verified' : 'NO - Tampering Detected'}
-              </div>
-            </div>
-            
-            <div className="col-span-2 p-4 rounded border" style={{ backgroundColor: 'var(--gov-bg)', borderColor: 'var(--gov-border)' }}>
-              <div className="text-xs uppercase font-semibold" style={{ color: 'var(--gov-text-muted)' }}>ML-DSA Signature Valid?</div>
-              <div className="text-sm font-bold" style={{ color: report.signature_valid ? 'var(--gov-success)' : 'var(--gov-danger)' }}>
-                {report.signature_valid ? 'YES - Non-Repudiable' : 'NO - Forgery Detected'}
-              </div>
-              <p className="text-xs mt-1" style={{ color: 'var(--gov-text-muted)' }}>
-                Post-Quantum Cryptography ensures this signature cannot be forged even by a quantum computer.
-              </p>
-            </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>

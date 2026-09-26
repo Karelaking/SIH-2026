@@ -43,15 +43,18 @@ export default function RecipientsPage() {
       if (typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window) {
         const result = await invoke<UserResponse[]>('get_users');
         setUsers(result);
+        setLoading(false);
+      } else {
+        setTimeout(() => setLoading(false), 0);
       }
     } catch (e) {
       console.error(e);
-    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers();
   }, []);
 
@@ -83,10 +86,8 @@ export default function RecipientsPage() {
         </div>
         
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[var(--gov-primary)] hover:bg-[var(--gov-primary-hover)] text-white rounded-[var(--gov-radius)]">
-              + Register Recipient
-            </Button>
+          <DialogTrigger className="bg-[var(--gov-primary)] hover:bg-[var(--gov-primary-hover)] text-white rounded-[var(--gov-radius)] px-4 py-2 font-medium text-sm">
+            + Register Recipient
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px] rounded-[var(--gov-radius)] bg-[var(--gov-surface)] text-[var(--gov-text-primary)] border-[var(--gov-border)]">
             <DialogHeader>

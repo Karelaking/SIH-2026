@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Sidebar } from "@/components/Sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,38 +28,41 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        {/* Official GOI Top Banner */}
-        <div style={{ backgroundColor: 'var(--gov-primary)' }} className="text-white text-xs px-4 py-1 flex justify-between items-center">
-          <div className="flex space-x-4">
-            <span>GOVERNMENT OF INDIA</span>
-            <span className="hidden sm:inline">|</span>
-            <span className="hidden sm:inline">MINISTRY OF DEFENCE</span>
-          </div>
-          <div>
-            <span className="text-gray-300">Secure Air-Gapped Console</span>
-          </div>
-        </div>
+      <body className="min-h-full flex flex-col bg-[var(--gov-bg)] text-[var(--gov-text-primary)]">
         
-        {/* Main Navigation */}
-        <nav style={{ backgroundColor: 'var(--gov-surface)', borderBottom: '1px solid var(--gov-border)' }} className="p-4 flex gap-6 items-center shadow-sm">
-          <div className="font-bold text-lg mr-8" style={{ color: 'var(--gov-primary)' }}>
-            <span style={{ color: 'var(--gov-secondary)' }}>D</span>L<span style={{ color: 'var(--gov-tertiary)' }}>A</span> Platform
+        {/* Official GOI Top Header */}
+        <header 
+          className="flex justify-between items-center px-6 py-3 shrink-0"
+          style={{ backgroundColor: 'var(--gov-primary)', borderBottom: '3px solid var(--gov-saffron)' }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col">
+              <span className="text-white font-bold text-lg tracking-wide flex items-center gap-2">
+                🇮🇳 Government of India
+              </span>
+              <span className="text-gray-200 text-xs font-medium tracking-wider">
+                CRYPTOGRAPHIC DOCUMENT SECURITY & ATTRIBUTION PLATFORM
+              </span>
+            </div>
           </div>
-          <a href="/" className="font-semibold text-sm hover:underline" style={{ color: 'var(--gov-text)' }}>Distribution</a>
-          <a href="/forensics" className="font-semibold text-sm hover:underline" style={{ color: 'var(--gov-text-muted)' }}>Forensics</a>
-          <a href="/recipients" className="font-semibold text-sm hover:underline" style={{ color: 'var(--gov-text-muted)' }}>Recipients</a>
-        </nav>
-        
-        <main className="flex-1">
-          {children}
-        </main>
+          <div className="flex items-center gap-6 text-white text-sm font-medium">
+            <span className="flex items-center gap-2 cursor-pointer hover:text-gray-200">
+              🔔 Alerts (0)
+            </span>
+            <span className="flex items-center gap-2 border-l border-white/20 pl-6 cursor-pointer hover:text-gray-200">
+              👤 Document Officer
+            </span>
+          </div>
+        </header>
 
-        <footer style={{ backgroundColor: 'var(--gov-surface)', borderTop: '1px solid var(--gov-border)' }} className="p-4 text-center text-xs" >
-          <p style={{ color: 'var(--gov-text-muted)' }}>
-            © {new Date().getFullYear()} Government of India. All rights reserved. Highly Confidential.
-          </p>
-        </footer>
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar />
+
+          {/* Main Content Area */}
+          <main className="flex-1 overflow-y-auto p-8">
+            {children}
+          </main>
+        </div>
       </body>
     </html>
   );

@@ -1,5 +1,8 @@
 use chrono::{DateTime, Utc};
-use identity_core::{generate_ml_dsa_keypair, generate_ml_kem_keypair, CryptographicIdentityPublic, KeyStatus, KemSecretKey, DsaSecretKey};
+use identity_core::{
+    generate_ml_dsa_keypair, generate_ml_kem_keypair, CryptographicIdentityPublic, DsaSecretKey,
+    KemSecretKey, KeyStatus,
+};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -43,7 +46,13 @@ impl IdentityManager {
     }
 
     /// Registers a new user without cryptographic identity
-    pub fn register_user(&mut self, name: String, department: String, organization: String, role: Role) -> User {
+    pub fn register_user(
+        &mut self,
+        name: String,
+        department: String,
+        organization: String,
+        role: Role,
+    ) -> User {
         let user_id = Uuid::new_v4().to_string();
         let user = User {
             user_id: user_id.clone(),
@@ -60,7 +69,10 @@ impl IdentityManager {
 
     /// Enrolls a user with new PQC keys.
     /// Returns the updated user and the protected keystore (to be stored in HSM or secure enclave).
-    pub fn enroll_cryptographic_identity(&mut self, user_id: &str) -> Result<(User, ProtectedKeystore), String> {
+    pub fn enroll_cryptographic_identity(
+        &mut self,
+        user_id: &str,
+    ) -> Result<(User, ProtectedKeystore), String> {
         let user = self.users.get_mut(user_id).ok_or("User not found")?;
 
         let (kem_pk, kem_sk) = generate_ml_kem_keypair();

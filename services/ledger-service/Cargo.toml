@@ -1,0 +1,11 @@
+[package]
+name = "ledger-service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ledger-core = { path = "../../packages/ledger-core" }
+forensics-service = { path = "../../services/forensics-service" }
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
+bincode = "1.3"

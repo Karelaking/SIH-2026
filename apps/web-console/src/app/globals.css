@@ -2,23 +2,25 @@
 
 :root {
   /* UX4G Institutional Theme (Light) */
-  --gov-primary: #0F172A; /* Deep Navy */
-  --gov-primary-hover: #1E293B;
-  --gov-primary-active: #0B1120;
+  --gov-primary: #000080; /* Navy Blue - Official GOI color */
+  --gov-primary-hover: #000066;
+  --gov-primary-active: #00004d;
   
-  --gov-secondary: #F97316; /* Saffron/Orange */
-  --gov-tertiary: #16A34A; /* Green */
+  --gov-secondary: #FF9933; /* Saffron */
+  --gov-tertiary: #138808; /* Green */
   
   --gov-success: #15803D;
   --gov-warning: #CA8A04;
   --gov-danger: #DC2626;
   --gov-info: #2563EB;
   
-  --gov-bg: #F8FAFC;
-  --gov-surface: #FFFFFF;
-  --gov-border: #E2E8F0;
-  --gov-text: #0F172A;
-  --gov-text-muted: #64748B;
+  --gov-bg: #FFFFFF; /* Pure white as requested */
+  --gov-surface: #F8F9FA; /* Slightly off-white for cards/panels */
+  --gov-border: #DEE2E6; /* Formal light border */
+  --gov-text: #212529; /* High contrast black/grey for text */
+  --gov-text-muted: #6C757D;
+  
+  --gov-radius: 4px; /* Rounded rectangular sharp corners */
   
   --background: var(--gov-bg);
   --foreground: var(--gov-text);
@@ -27,23 +29,23 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* UX4G Institutional Theme (Dark/Air-Gapped Console) */
-    --gov-primary: #1E293B; /* Lighter Navy for contrast in dark mode */
-    --gov-primary-hover: #334155;
-    --gov-primary-active: #0F172A;
+    --gov-primary: #004080; 
+    --gov-primary-hover: #003366;
+    --gov-primary-active: #002244;
     
-    --gov-secondary: #F97316; /* Saffron/Orange */
-    --gov-tertiary: #22C55E; /* Green */
+    --gov-secondary: #FF9933; /* Saffron */
+    --gov-tertiary: #138808; /* Green */
     
     --gov-success: #22C55E;
     --gov-warning: #EAB308;
     --gov-danger: #EF4444;
     --gov-info: #3B82F6;
     
-    --gov-bg: #0B1120;
-    --gov-surface: #1E293B;
-    --gov-border: #334155;
+    --gov-bg: #000000; /* Pure black as requested */
+    --gov-surface: #121212; /* Dark surface for contrast */
+    --gov-border: #343A40;
     --gov-text: #F8FAFC;
-    --gov-text-muted: #94A3B8;
+    --gov-text-muted: #ADB5BD;
     
     --background: var(--gov-bg);
     --foreground: var(--gov-text);
@@ -61,4 +63,69 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Formal button classes */
+.btn-gov {
+  background-color: var(--gov-primary);
+  color: #FFFFFF;
+  border-radius: var(--gov-radius);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  border: 1px solid transparent;
+}
+.btn-gov:hover {
+  background-color: var(--gov-primary-hover);
+}
+.btn-gov:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.btn-gov-outline {
+  background-color: transparent;
+  color: var(--gov-primary);
+  border-radius: var(--gov-radius);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  border: 1px solid var(--gov-primary);
+  transition: all 0.2s;
+}
+.btn-gov-outline:hover {
+  background-color: var(--gov-primary);
+  color: #FFFFFF;
+}
+@media (prefers-color-scheme: dark) {
+  .btn-gov-outline {
+    color: var(--gov-text);
+    border-color: var(--gov-border);
+  }
+  .btn-gov-outline:hover {
+    background-color: var(--gov-surface);
+    border-color: var(--gov-text);
+  }
+}
+
+/* Formal input classes */
+.input-gov {
+  background-color: var(--gov-surface);
+  color: var(--gov-text);
+  border: 1px solid var(--gov-border);
+  border-radius: var(--gov-radius);
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+}
+.input-gov:focus {
+  outline: none;
+  border-color: var(--gov-primary);
+  box-shadow: 0 0 0 2px rgba(0, 0, 128, 0.25);
+}
+
+/* Surface classes */
+.surface-gov {
+  background-color: var(--gov-surface);
+  border: 1px solid var(--gov-border);
+  border-radius: var(--gov-radius);
+  padding: 1.5rem;
 }

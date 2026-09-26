@@ -1,0 +1,18 @@
+FROM tauri-rust-test
+
+# Install Node.js
+RUN apt-get update && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+# Create a build directory
+WORKDIR /build
+
+# Copy the entire workspace
+COPY . .
+
+# Run npm install and build Next.js, then build Tauri app
+WORKDIR /build/apps/web-console
+RUN npm install
+RUN npm run build
+RUN npx tauri build

@@ -12,7 +12,7 @@ pub enum WatermarkError {
 }
 
 const ZW_ZERO: char = '\u{200B}'; // Zero-Width Space
-const ZW_ONE: char = '\u{200C}';  // Zero-Width Non-Joiner
+const ZW_ONE: char = '\u{200C}'; // Zero-Width Non-Joiner
 
 /// Encodes binary data into a string of zero-width characters
 pub fn encode_zero_width(data: &[u8]) -> String {
@@ -55,9 +55,14 @@ pub fn decode_zero_width(text: &str) -> Result<Vec<u8>, WatermarkError> {
 }
 
 /// Adds Reed-Solomon ECC to the payload and encodes it into zero-width characters.
-pub fn embed_watermark_with_ecc(payload: &[u8], data_shards: usize, parity_shards: usize) -> Result<String, WatermarkError> {
-    let rs = ReedSolomon::new(data_shards, parity_shards).map_err(|_| WatermarkError::EccEncodeError)?;
-    
+pub fn embed_watermark_with_ecc(
+    payload: &[u8],
+    data_shards: usize,
+    parity_shards: usize,
+) -> Result<String, WatermarkError> {
+    let rs =
+        ReedSolomon::new(data_shards, parity_shards).map_err(|_| WatermarkError::EccEncodeError)?;
+
     // We expect payload to perfectly fit data_shards, for simplicity we pad it if it doesn't.
     // Real implementation would chunk and pad properly.
     let mut shards: Vec<Vec<u8>> = vec![vec![0u8; 1]; data_shards + parity_shards];
@@ -67,7 +72,8 @@ pub fn embed_watermark_with_ecc(payload: &[u8], data_shards: usize, parity_shard
         }
     }
 
-    rs.encode(&mut shards).map_err(|_| WatermarkError::EccEncodeError)?;
+    rs.encode(&mut shards)
+        .map_err(|_| WatermarkError::EccEncodeError)?;
 
     // Flatten shards to bytes
     let ecc_payload: Vec<u8> = shards.into_iter().flatten().collect();
@@ -76,21 +82,27 @@ pub fn embed_watermark_with_ecc(payload: &[u8], data_shards: usize, parity_shard
 }
 
 /// Extracts Reed-Solomon ECC payload from zero-width characters and reconstructs the original data.
-pub fn extract_watermark_with_ecc(text: &str, data_shards: usize, parity_shards: usize) -> Result<Vec<u8>, WatermarkError> {
+pub fn extract_watermark_with_ecc(
+    text: &str,
+    data_shards: usize,
+    parity_shards: usize,
+) -> Result<Vec<u8>, WatermarkError> {
     let raw_data = decode_zero_width(text)?;
 
     if raw_data.len() < data_shards + parity_shards {
         return Err(WatermarkError::EccDecodeError);
     }
 
-    let rs = ReedSolomon::new(data_shards, parity_shards).map_err(|_| WatermarkError::EccDecodeError)?;
-    
+    let rs =
+        ReedSolomon::new(data_shards, parity_shards).map_err(|_| WatermarkError::EccDecodeError)?;
+
     let mut shards: Vec<Option<Vec<u8>>> = Vec::new();
     for i in 0..(data_shards + parity_shards) {
         shards.push(Some(vec![raw_data[i]]));
     }
 
-    rs.reconstruct(&mut shards).map_err(|_| WatermarkError::EccDecodeError)?;
+    rs.reconstruct(&mut shards)
+        .map_err(|_| WatermarkError::EccDecodeError)?;
 
     let mut recovered_payload = Vec::with_capacity(data_shards);
     for i in 0..data_shards {

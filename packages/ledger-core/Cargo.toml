@@ -1,0 +1,12 @@
+[package]
+name = "ledger-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rs_merkle = "1.4"
+sha3 = "0.10"
+serde = { version = "1.0", features = ["derive"] }
+bincode = "1.3"
+hex = "0.4"
+thiserror = "1.0"

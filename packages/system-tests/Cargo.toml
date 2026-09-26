@@ -1,0 +1,22 @@
+[package]
+name = "system-tests"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+identity-core = { path = "../identity-core" }
+identity-service = { path = "../../services/identity-service" }
+crypto-core = { path = "../crypto-core" }
+document-service = { path = "../../services/document-service" }
+watermark-core = { path = "../watermark-core" }
+forensics-service = { path = "../../services/forensics-service" }
+ledger-core = { path = "../ledger-core" }
+ledger-service = { path = "../../services/ledger-service" }
+rand = "0.8"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "crypto_benches"
+harness = false

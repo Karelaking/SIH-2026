@@ -34,8 +34,9 @@ pub struct LedgerBlock {
     pub current_hash: String,
 }
 
+#[derive(Clone)]
 pub struct HashChain {
-    blocks: Vec<LedgerBlock>,
+    pub blocks: Vec<LedgerBlock>,
 }
 
 impl HashChain {
@@ -50,7 +51,9 @@ impl HashChain {
     pub fn append(&mut self, payload: &[u8]) -> Result<LedgerBlock, LedgerError> {
         let previous_hash = match self.blocks.last() {
             Some(block) => block.current_hash.clone(),
-            None => String::from("0000000000000000000000000000000000000000000000000000000000000000"), // Genesis block
+            None => {
+                String::from("0000000000000000000000000000000000000000000000000000000000000000")
+            } // Genesis block
         };
 
         let mut data = Vec::new();

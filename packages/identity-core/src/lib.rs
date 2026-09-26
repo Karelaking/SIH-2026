@@ -1,7 +1,7 @@
-use pqcrypto_kyber::kyber768;
 use pqcrypto_dilithium::dilithium3;
-pub use pqcrypto_kyber::kyber768::{PublicKey as KemPublicKey, SecretKey as KemSecretKey};
 pub use pqcrypto_dilithium::dilithium3::{PublicKey as DsaPublicKey, SecretKey as DsaSecretKey};
+use pqcrypto_kyber::kyber768;
+pub use pqcrypto_kyber::kyber768::{PublicKey as KemPublicKey, SecretKey as KemSecretKey};
 use pqcrypto_traits::kem::PublicKey as KemTraitPublicKey;
 use pqcrypto_traits::sign::PublicKey as SignTraitPublicKey;
 use serde::{Deserialize, Serialize};
@@ -35,7 +35,11 @@ pub fn generate_ml_dsa_keypair() -> (dilithium3::PublicKey, dilithium3::SecretKe
 }
 
 impl CryptographicIdentityPublic {
-    pub fn new(identity_id: String, kem_pk: &kyber768::PublicKey, dsa_pk: &dilithium3::PublicKey) -> Self {
+    pub fn new(
+        identity_id: String,
+        kem_pk: &kyber768::PublicKey,
+        dsa_pk: &dilithium3::PublicKey,
+    ) -> Self {
         Self {
             identity_id,
             kem_public_key: kem_pk.as_bytes().to_vec(),

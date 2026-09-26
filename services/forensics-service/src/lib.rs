@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use crypto_core::hash_document_sha3_256;
 use identity_core::DsaSecretKey;
 use pqcrypto_dilithium::dilithium3;
-use pqcrypto_traits::sign::{DetachedSignature, PublicKey, SecretKey};
+use pqcrypto_traits::sign::{DetachedSignature, PublicKey};
 use serde::{Deserialize, Serialize};
 use watermark_core::{embed_watermark_with_ecc, WatermarkError};
 
@@ -54,7 +54,7 @@ impl ForensicsManager {
         plaintext: &str,
     ) -> Result<String, ForensicsError> {
         let payload = event_id.as_bytes();
-        
+
         // Simple ECC parameters: 16 data shards, 8 parity shards
         // (Assuming EVT string length fits)
         let zw_watermark = embed_watermark_with_ecc(payload, 24, 8)?;
@@ -72,7 +72,7 @@ impl ForensicsManager {
         dsa_secret_key: &DsaSecretKey,
     ) -> Result<DecryptionAttestation, ForensicsError> {
         let timestamp = Utc::now();
-        
+
         let mut attestation = DecryptionAttestation {
             event_id,
             document_hash,
@@ -94,9 +94,7 @@ impl ForensicsManager {
     }
 
     /// Extracts the Event ID from a zero-width watermarked plaintext
-    pub fn extract_event_id_from_document(
-        plaintext: &str,
-    ) -> Result<String, ForensicsError> {
+    pub fn extract_event_id_from_document(plaintext: &str) -> Result<String, ForensicsError> {
         // ECC parameters used during embedding: 24 data shards, 8 parity shards
         let recovered_payload = watermark_core::extract_watermark_with_ecc(plaintext, 24, 8)?;
 
@@ -123,7 +121,9 @@ impl ForensicsManager {
         let ledger_valid = ledger_chain.verify(); // Verify whole chain integrity
 
         for block in ledger_chain.get_blocks() {
-            if let Ok(attestation) = bincode::deserialize::<DecryptionAttestation>(&block.event_payload) {
+            if let Ok(attestation) =
+                bincode::deserialize::<DecryptionAttestation>(&block.event_payload)
+            {
                 if attestation.event_id == event_id {
                     target_attestation = Some(attestation);
                     break;
@@ -141,15 +141,16 @@ impl ForensicsManager {
             let mut attestation_copy = attestation.clone();
             attestation_copy.signature = Vec::new();
             let data_to_verify = bincode::serialize(&attestation_copy).unwrap_or_default();
-            
+
             let sig_bytes = attestation.signature.as_slice();
             let signature = pqcrypto_traits::sign::DetachedSignature::from_bytes(sig_bytes)
                 .map_err(|_| ForensicsError::SigningError)?;
-                
+
             let pk = pqcrypto_dilithium::dilithium3::PublicKey::from_bytes(dsa_public_key)
                 .map_err(|_| ForensicsError::SigningError)?;
 
-            let signature_valid = dilithium3::verify_detached_signature(&signature, &data_to_verify, &pk).is_ok();
+            let signature_valid =
+                dilithium3::verify_detached_signature(&signature, &data_to_verify, &pk).is_ok();
 
             Ok(ForensicReport {
                 is_match,

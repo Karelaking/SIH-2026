@@ -1,0 +1,27 @@
+FROM tauri-rust-test
+
+# Install Node.js, Mingw-w64 (for Windows cross-compilation), and NSIS (for .exe installers)
+RUN apt-get update && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs mingw-w64 nsis lld
+
+# Add the Windows GNU target to Rust
+RUN rustup target add x86_64-pc-windows-gnu
+
+# Configure Cargo to use the MinGW linker for the Windows target
+RUN mkdir -p /.cargo && \
+    echo "[target.x86_64-pc-windows-gnu]\nlinker = \"x86_64-w64-mingw32-gcc\"" > /.cargo/config.toml
+
+# Also put it in the home directory just in case
+RUN mkdir -p ~/.cargo && \
+    echo "[target.x86_64-pc-windows-gnu]\nlinker = \"x86_64-w64-mingw32-gcc\"" > ~/.cargo/config.toml
+
+WORKDIR /build
+COPY . .
+
+WORKDIR /build/apps/web-console
+RUN npm install
+RUN npm run build
+
+# Run the Tauri build targeting Windows!
+RUN npx tauri build --target x86_64-pc-windows-gnu

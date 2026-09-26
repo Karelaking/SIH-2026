@@ -7,5 +7,8 @@ members = [
     "packages/crypto-core",
     "services/document-service",
     "packages/watermark-core",
-    "services/forensics-service"
+    "services/forensics-service",
+    "packages/ledger-core",
+    "services/ledger-service",
+    "packages/system-tests"
 ]

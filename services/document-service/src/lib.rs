@@ -51,8 +51,9 @@ pub fn distribute_document(
     rand::thread_rng().fill_bytes(&mut content_key);
 
     // 3. Encrypt Document
-    let (encrypted_document, doc_nonce) = encrypt_document_aes256gcm(&content_key, document_data)
-        .map_err(|_| DocumentError::CryptoError("Document encryption failed".to_string()))?;
+    let (encrypted_document, doc_nonce) =
+        encrypt_document_aes256gcm(&content_key, document_data)
+            .map_err(|_| DocumentError::CryptoError("Document encryption failed".to_string()))?;
 
     // 4. Generate Metadata
     let metadata = DocumentMetadata {

@@ -187,6 +187,21 @@ fn verify_leak(
     Ok(report)
 }
 
+#[derive(serde::Serialize)]
+pub struct DocumentRecordResponse {
+    pub id: String,
+    pub title: String,
+    pub hash: String,
+    pub encrypted_at: String,
+    pub size_bytes: u64,
+}
+
+#[tauri::command]
+fn get_documents() -> Result<Vec<DocumentRecordResponse>, String> {
+    // Return empty list initially to show the Shadcn empty state
+    Ok(vec![])
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -200,6 +215,7 @@ pub fn run() {
             get_system_status,
             get_users,
             register_user,
+            get_documents,
             distribute,
             verify_leak
         ])

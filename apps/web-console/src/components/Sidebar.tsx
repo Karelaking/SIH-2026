@@ -32,6 +32,7 @@ export function Sidebar() {
         <div>
           <h3 className="text-xs font-bold text-(--gov-text-secondary) uppercase tracking-wider mb-2 px-3">Document Security</h3>
           <ul className="space-y-1">
+            <li><Link href="/documents" className={getLinkClass('/documents')}>📄 Documents</Link></li>
             <li><Link href="/recipients" className={getLinkClass('/recipients')}>👥 Recipients</Link></li>
             <li><Link href="/distribution" className={getLinkClass('/distribution')}>📤 Distribution</Link></li>
           </ul>

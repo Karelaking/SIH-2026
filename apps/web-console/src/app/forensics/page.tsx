@@ -57,12 +57,12 @@ export default function Forensics() {
         </p>
       </div>
 
-      <Card className="rounded-[var(--gov-radius)] p-6 space-y-6">
+      <Card className="rounded-(--gov-radius) p-6 space-y-6">
         <div>
-          <label className="block text-sm font-bold uppercase tracking-wider mb-2 text-[var(--gov-text-primary)]">Upload Leaked Document (or paste source)</label>
+          <label className="block text-sm font-bold uppercase tracking-wider mb-2 text-(--gov-text-primary)">Upload Leaked Document (or paste source)</label>
           <textarea 
             rows={6}
-            className="w-full border border-[var(--gov-border)] rounded-[var(--gov-radius)] p-2 font-mono text-sm bg-[var(--gov-bg)]"
+            className="w-full border border-(--gov-border) rounded-(--gov-radius) p-2 font-mono text-sm bg-(--gov-bg)"
             value={leakedText}
             onChange={(e) => setLeakedText(e.target.value)}
             placeholder="Drop document text containing the invisible watermark here..."
@@ -70,21 +70,21 @@ export default function Forensics() {
           />
         </div>
         <div>
-          <label className="block text-sm font-bold uppercase tracking-wider mb-2 text-[var(--gov-text-primary)]">Expected Original Document Hash (Optional)</label>
+          <label className="block text-sm font-bold uppercase tracking-wider mb-2 text-(--gov-text-primary)">Expected Original Document Hash (Optional)</label>
           <Input 
             type="text" 
-            className="bg-[var(--gov-bg)] font-mono text-sm border-[var(--gov-border)] rounded-[var(--gov-radius)]"
+            className="bg-(--gov-bg) font-mono text-sm border-(--gov-border) rounded-(--gov-radius)"
             value={expectedHash}
             onChange={(e) => setExpectedHash(e.target.value)}
             placeholder="e.g. a3f8... (Leave blank for autonomous detection)"
             disabled={pipelineState === 'RUNNING'}
           />
         </div>
-        <div className="pt-4 border-t border-[var(--gov-border)] flex justify-end">
+        <div className="pt-4 border-t border-(--gov-border) flex justify-end">
           <Button
             onClick={handleVerify}
             disabled={pipelineState === 'RUNNING' || !leakedText}
-            className="rounded-[var(--gov-radius)]"
+            className="rounded-(--gov-radius)"
             style={{ backgroundColor: 'var(--gov-critical)' }}
           >
             {pipelineState === 'RUNNING' ? 'Executing Analysis Pipeline...' : 'Start Analysis'}
@@ -93,69 +93,69 @@ export default function Forensics() {
       </Card>
 
       {pipelineState === 'RUNNING' && (
-        <Card className="rounded-[var(--gov-radius)] p-6">
-           <h2 className="text-sm font-bold text-[var(--gov-text-secondary)] uppercase tracking-wider mb-4 border-b border-[var(--gov-border)] pb-2">Analysis Pipeline</h2>
-           <ul className="space-y-3 font-mono text-sm text-[var(--gov-text-primary)]">
-             <li className="flex gap-3 items-center"><span className="text-[var(--gov-warning)]">⟳</span> <span>Document received, calculating integrity hash...</span></li>
-             <li className="flex gap-3 items-center text-[var(--gov-text-secondary)]"><span>○</span> <span>DETECTED: Scanning for zero-width embedded signatures...</span></li>
-             <li className="flex gap-3 items-center text-[var(--gov-text-secondary)]"><span>○</span> <span>DECODED: Extracting Reed-Solomon blocks...</span></li>
+        <Card className="rounded-(--gov-radius) p-6">
+           <h2 className="text-sm font-bold text-(--gov-text-secondary) uppercase tracking-wider mb-4 border-b border-(--gov-border) pb-2">Analysis Pipeline</h2>
+           <ul className="space-y-3 font-mono text-sm text-(--gov-text-primary)">
+             <li className="flex gap-3 items-center"><span className="text-(--gov-warning)">⟳</span> <span>Document received, calculating integrity hash...</span></li>
+             <li className="flex gap-3 items-center text-(--gov-text-secondary)"><span>○</span> <span>DETECTED: Scanning for zero-width embedded signatures...</span></li>
+             <li className="flex gap-3 items-center text-(--gov-text-secondary)"><span>○</span> <span>DECODED: Extracting Reed-Solomon blocks...</span></li>
            </ul>
         </Card>
       )}
 
       {pipelineState === 'DONE' && report && (
         <div className="space-y-6">
-          <Card className="rounded-[var(--gov-radius)] p-6">
-             <h2 className="text-sm font-bold text-[var(--gov-text-secondary)] uppercase tracking-wider mb-4 border-b border-[var(--gov-border)] pb-2">Analysis Pipeline</h2>
-             <ul className="space-y-3 font-mono text-sm text-[var(--gov-text-primary)]">
-               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>Document received & integrity hash calculated</span></li>
-               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>DETECTED: Zero-width signatures found</span></li>
-               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>DECODED: Reed-Solomon blocks extracted successfully</span></li>
-               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>AUTHENTICATED: Watermark payload matches system protocol</span></li>
-               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>MATCHED: Event ID {report.event_id.substring(0, 8)}... isolated</span></li>
-               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>SIGNATURE VERIFIED: Post-Quantum ML-DSA signature confirmed</span></li>
-               <li className="flex gap-3 items-center"><span className="text-[var(--gov-success)] font-bold">✓</span> <span>LEDGER VERIFIED: Decentralized consensus records intact</span></li>
+          <Card className="rounded-(--gov-radius) p-6">
+             <h2 className="text-sm font-bold text-(--gov-text-secondary) uppercase tracking-wider mb-4 border-b border-(--gov-border) pb-2">Analysis Pipeline</h2>
+             <ul className="space-y-3 font-mono text-sm text-(--gov-text-primary)">
+               <li className="flex gap-3 items-center"><span className="text-(--gov-success) font-bold">✓</span> <span>Document received & integrity hash calculated</span></li>
+               <li className="flex gap-3 items-center"><span className="text-(--gov-success) font-bold">✓</span> <span>DETECTED: Zero-width signatures found</span></li>
+               <li className="flex gap-3 items-center"><span className="text-(--gov-success) font-bold">✓</span> <span>DECODED: Reed-Solomon blocks extracted successfully</span></li>
+               <li className="flex gap-3 items-center"><span className="text-(--gov-success) font-bold">✓</span> <span>AUTHENTICATED: Watermark payload matches system protocol</span></li>
+               <li className="flex gap-3 items-center"><span className="text-(--gov-success) font-bold">✓</span> <span>MATCHED: Event ID {report.event_id.substring(0, 8)}... isolated</span></li>
+               <li className="flex gap-3 items-center"><span className="text-(--gov-success) font-bold">✓</span> <span>SIGNATURE VERIFIED: Post-Quantum ML-DSA signature confirmed</span></li>
+               <li className="flex gap-3 items-center"><span className="text-(--gov-success) font-bold">✓</span> <span>LEDGER VERIFIED: Decentralized consensus records intact</span></li>
              </ul>
           </Card>
 
-          <Card className="rounded-[var(--gov-radius)] p-8 border-l-4" style={{ borderLeftColor: report.confidence_score.includes('100%') ? 'var(--gov-success)' : 'var(--gov-critical)' }}>
+          <Card className="rounded-(--gov-radius) p-8 border-l-4" style={{ borderLeftColor: report.confidence_score.includes('100%') ? 'var(--gov-success)' : 'var(--gov-critical)' }}>
             <h2 className="text-2xl font-bold uppercase tracking-wide mb-6" style={{ color: report.confidence_score.includes('100%') ? 'var(--gov-success)' : 'var(--gov-critical)' }}>
               {report.confidence_score.includes('100%') ? 'ATTRIBUTION VERIFIED' : 'ATTRIBUTION FAILED'}
             </h2>
             
             <div className="grid grid-cols-2 gap-y-6 gap-x-12">
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Recipient</div>
-                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono">{report.recipient_id}</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-(--gov-text-secondary)">Recipient</div>
+                <div className="text-lg font-bold text-(--gov-text-primary) font-mono">{report.recipient_id}</div>
               </div>
 
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Event</div>
-                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono truncate" title={report.event_id}>{report.event_id}</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-(--gov-text-secondary)">Event</div>
+                <div className="text-lg font-bold text-(--gov-text-primary) font-mono truncate" title={report.event_id}>{report.event_id}</div>
               </div>
 
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Document</div>
-                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono">{expectedHash || "Auto-Matched (DOC-ID)"}</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-(--gov-text-secondary)">Document</div>
+                <div className="text-lg font-bold text-(--gov-text-primary) font-mono">{expectedHash || "Auto-Matched (DOC-ID)"}</div>
               </div>
 
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Signature</div>
-                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono">
-                   {report.signature_valid ? <span className="text-[var(--gov-success)]">✓ VALID (ML-DSA)</span> : <span className="text-[var(--gov-critical)]">✕ FORGERY DETECTED</span>}
+                <div className="text-xs font-bold uppercase tracking-wider text-(--gov-text-secondary)">Signature</div>
+                <div className="text-lg font-bold text-(--gov-text-primary) font-mono">
+                   {report.signature_valid ? <span className="text-(--gov-success)">✓ VALID (ML-DSA)</span> : <span className="text-(--gov-critical)">✕ FORGERY DETECTED</span>}
                 </div>
               </div>
 
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Ledger</div>
-                <div className="text-lg font-bold text-[var(--gov-text-primary)] font-mono">
-                   {report.ledger_valid ? <span className="text-[var(--gov-success)]">✓ VERIFIED</span> : <span className="text-[var(--gov-critical)]">✕ TAMPERING DETECTED</span>}
+                <div className="text-xs font-bold uppercase tracking-wider text-(--gov-text-secondary)">Ledger</div>
+                <div className="text-lg font-bold text-(--gov-text-primary) font-mono">
+                   {report.ledger_valid ? <span className="text-(--gov-success)">✓ VERIFIED</span> : <span className="text-(--gov-critical)">✕ TAMPERING DETECTED</span>}
                 </div>
               </div>
 
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-[var(--gov-text-secondary)]">Evidence</div>
-                <div className="text-lg font-bold text-[var(--gov-success)] font-mono">✓ COMPLETE</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-(--gov-text-secondary)">Evidence</div>
+                <div className="text-lg font-bold text-(--gov-success) font-mono">✓ COMPLETE</div>
               </div>
             </div>
             

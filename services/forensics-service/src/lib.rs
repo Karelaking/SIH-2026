@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use crypto_core::hash_document_sha3_256;
 use identity_core::DsaSecretKey;
 use pqcrypto_dilithium::dilithium3;
-use pqcrypto_traits::sign::{DetachedSignature, SecretKey};
+use pqcrypto_traits::sign::{DetachedSignature, PublicKey, SecretKey};
 use serde::{Deserialize, Serialize};
 use watermark_core::{embed_watermark_with_ecc, WatermarkError};
 
@@ -92,4 +92,96 @@ impl ForensicsManager {
 
         Ok(attestation)
     }
+
+    /// Extracts the Event ID from a zero-width watermarked plaintext
+    pub fn extract_event_id_from_document(
+        plaintext: &str,
+    ) -> Result<String, ForensicsError> {
+        // ECC parameters used during embedding: 24 data shards, 8 parity shards
+        let recovered_payload = watermark_core::extract_watermark_with_ecc(plaintext, 24, 8)?;
+
+        // Payload is the Event ID bytes. Clean up trailing nulls if padded.
+        let event_id = String::from_utf8_lossy(&recovered_payload)
+            .trim_end_matches('\0')
+            .to_string();
+
+        Ok(event_id)
+    }
+
+    /// Verifies a leaked document against the ledger to attribute the leak
+    pub fn verify_leaked_document(
+        plaintext: &str,
+        expected_document_hash: &str,
+        ledger_chain: &ledger_core::HashChain,
+        dsa_public_key: &[u8],
+    ) -> Result<ForensicReport, ForensicsError> {
+        // 1. Extract Watermark (Event ID)
+        let event_id = Self::extract_event_id_from_document(plaintext)?;
+
+        // 2. Find Event in Ledger
+        let mut target_attestation: Option<DecryptionAttestation> = None;
+        let ledger_valid = ledger_chain.verify(); // Verify whole chain integrity
+
+        for block in ledger_chain.get_blocks() {
+            if let Ok(attestation) = bincode::deserialize::<DecryptionAttestation>(&block.event_payload) {
+                if attestation.event_id == event_id {
+                    target_attestation = Some(attestation);
+                    break;
+                }
+            }
+        }
+
+        if let Some(attestation) = target_attestation {
+            let mut is_match = true;
+            if attestation.document_hash != expected_document_hash {
+                is_match = false;
+            }
+
+            // Verify signature
+            let mut attestation_copy = attestation.clone();
+            attestation_copy.signature = Vec::new();
+            let data_to_verify = bincode::serialize(&attestation_copy).unwrap_or_default();
+            
+            let sig_bytes = attestation.signature.as_slice();
+            let signature = pqcrypto_traits::sign::DetachedSignature::from_bytes(sig_bytes)
+                .map_err(|_| ForensicsError::SigningError)?;
+                
+            let pk = pqcrypto_dilithium::dilithium3::PublicKey::from_bytes(dsa_public_key)
+                .map_err(|_| ForensicsError::SigningError)?;
+
+            let signature_valid = dilithium3::verify_detached_signature(&signature, &data_to_verify, &pk).is_ok();
+
+            Ok(ForensicReport {
+                is_match,
+                event_id,
+                recipient_id: attestation.recipient_id,
+                signature_valid,
+                ledger_valid,
+                confidence_score: if is_match && signature_valid && ledger_valid {
+                    String::from("100% - Cryptographically Proven")
+                } else {
+                    String::from("Compromised/Invalid")
+                },
+            })
+        } else {
+            Ok(ForensicReport {
+                is_match: false,
+                event_id,
+                recipient_id: String::from("NOT_FOUND_IN_LEDGER"),
+                signature_valid: false,
+                ledger_valid,
+                confidence_score: String::from("0% - No Ledger Record"),
+            })
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ForensicReport {
+    pub is_match: bool,
+    pub event_id: String,
+    pub recipient_id: String,
+    pub signature_valid: bool,
+    pub ledger_valid: bool,
+    pub confidence_score: String,
 }

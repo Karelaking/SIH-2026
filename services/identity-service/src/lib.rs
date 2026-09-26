@@ -32,7 +32,7 @@ pub struct ProtectedKeystore {
 
 pub struct IdentityManager {
     // In a real system, this would be a secure database
-    users: std::collections::HashMap<String, User>,
+    pub users: std::collections::HashMap<String, User>,
 }
 
 impl IdentityManager {

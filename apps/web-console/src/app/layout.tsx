@@ -23,7 +23,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-gray-950 text-white">
+        <nav className="p-4 border-b border-gray-800 flex gap-4">
+          <a href="/" className="font-bold text-white hover:text-gray-300">Distribution</a>
+          <a href="/forensics" className="text-gray-400 hover:text-white">Forensics</a>
+        </nav>
+        {children}
+      </body>
     </html>
   );
 }

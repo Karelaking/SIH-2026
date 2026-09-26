@@ -74,3 +74,32 @@ pub fn embed_watermark_with_ecc(payload: &[u8], data_shards: usize, parity_shard
 
     Ok(encode_zero_width(&ecc_payload))
 }
+
+/// Extracts Reed-Solomon ECC payload from zero-width characters and reconstructs the original data.
+pub fn extract_watermark_with_ecc(text: &str, data_shards: usize, parity_shards: usize) -> Result<Vec<u8>, WatermarkError> {
+    let raw_data = decode_zero_width(text)?;
+
+    if raw_data.len() < data_shards + parity_shards {
+        return Err(WatermarkError::EccDecodeError);
+    }
+
+    let rs = ReedSolomon::new(data_shards, parity_shards).map_err(|_| WatermarkError::EccDecodeError)?;
+    
+    let mut shards: Vec<Option<Vec<u8>>> = Vec::new();
+    for i in 0..(data_shards + parity_shards) {
+        shards.push(Some(vec![raw_data[i]]));
+    }
+
+    rs.reconstruct(&mut shards).map_err(|_| WatermarkError::EccDecodeError)?;
+
+    let mut recovered_payload = Vec::with_capacity(data_shards);
+    for i in 0..data_shards {
+        if let Some(shard) = &shards[i] {
+            recovered_payload.push(shard[0]);
+        } else {
+            return Err(WatermarkError::EccDecodeError);
+        }
+    }
+
+    Ok(recovered_payload)
+}

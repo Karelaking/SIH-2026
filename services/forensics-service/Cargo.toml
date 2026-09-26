@@ -1,0 +1,16 @@
+[package]
+name = "forensics-service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+watermark-core = { path = "../../packages/watermark-core" }
+crypto-core = { path = "../../packages/crypto-core" }
+identity-core = { path = "../../packages/identity-core" }
+serde = { version = "1.0", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.8", features = ["v4", "serde"] }
+pqcrypto-dilithium = "0.4"
+pqcrypto-traits = "0.3"
+hex = "0.4"
+bincode = "1.3"

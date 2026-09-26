@@ -10,7 +10,6 @@ use tauri::State;
 pub struct AppState {
     pub identity_manager: Mutex<IdentityManager>,
     pub ledger: Mutex<LedgerNetwork>,
-    // Store keys in memory just for POC simulation
     pub mock_keystore: Mutex<HashMap<String, ProtectedKeystore>>,
 }
 
@@ -19,50 +18,122 @@ fn get_system_status() -> String {
     "System Online - All Cryptographic Core Modules Loaded".to_string()
 }
 
+// User representation for frontend
+#[derive(serde::Serialize)]
+pub struct UserResponse {
+    pub id: String,
+    pub name: String,
+    pub department: String,
+    pub clearance: String,
+    pub role: String,
+}
+
 #[tauri::command]
-fn distribute(
-    _title: String,
-    content: String,
-    _recipient_role: String,
+fn get_users(state: State<'_, AppState>) -> Result<Vec<UserResponse>, String> {
+    let id_mgr = state.identity_manager.lock().unwrap();
+    let users = id_mgr
+        .users
+        .values()
+        .map(|u| UserResponse {
+            id: u.user_id.clone(),
+            name: u.name.clone(),
+            department: u.department.clone(),
+            clearance: u.clearance_level.clone(),
+            role: match u.role {
+                Role::SuperAdmin => "SuperAdmin".to_string(),
+                Role::SecurityAdmin => "SecurityAdmin".to_string(),
+                Role::DocumentOfficer => "DocumentOfficer".to_string(),
+                Role::Recipient => "Recipient".to_string(),
+                Role::ForensicInvestigator => "ForensicInvestigator".to_string(),
+            },
+        })
+        .collect();
+    Ok(users)
+}
+
+#[tauri::command]
+fn register_user(
+    name: String,
+    department: String,
+    clearance: String,
+    role_str: String,
     state: State<'_, AppState>,
-) -> Result<String, String> {
+) -> Result<UserResponse, String> {
     let mut id_mgr = state.identity_manager.lock().unwrap();
-    let mut ledger = state.ledger.lock().unwrap();
     let mut keystore_map = state.mock_keystore.lock().unwrap();
 
-    // Create a dummy recipient user (if doesn't exist)
-    let recipient_name = "Alice Recipient";
+    let role = match role_str.as_str() {
+        "SuperAdmin" => Role::SuperAdmin,
+        "SecurityAdmin" => Role::SecurityAdmin,
+        "DocumentOfficer" => Role::DocumentOfficer,
+        "Recipient" => Role::Recipient,
+        "ForensicInvestigator" => Role::ForensicInvestigator,
+        _ => Role::Recipient,
+    };
 
-    // We'll just always register for this POC
-    let user = id_mgr.register_user(
-        recipient_name.to_string(),
-        "Finance".to_string(),
-        "HQ".to_string(),
-        Role::Recipient,
-    );
+    let user = id_mgr.register_user(name.clone(), department.clone(), clearance.clone(), role);
     let recipient_id = user.user_id.clone();
 
-    let (updated_user, keystore) = id_mgr.enroll_cryptographic_identity(&recipient_id)?;
+    // Enroll cryptographic identity for the user right away (in real world, this is separate)
+    let (updated_user, keystore) = id_mgr
+        .enroll_cryptographic_identity(&recipient_id)
+        .map_err(|e| format!("Enrollment failed: {}", e))?;
+        
     keystore_map.insert(recipient_id.clone(), keystore);
 
-    let recipient_pub_identity = updated_user.cryptographic_identity.unwrap();
-    let recipient_pub_keys = vec![recipient_pub_identity];
+    Ok(UserResponse {
+        id: updated_user.user_id.clone(),
+        name: updated_user.name.clone(),
+        department: updated_user.department.clone(),
+        clearance: updated_user.clearance_level.clone(),
+        role: role_str,
+    })
+}
+
+#[tauri::command]
+fn distribute(
+    title: String,
+    content: String,
+    recipient_ids: Vec<String>, // We take a list of recipient IDs now
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let id_mgr = state.identity_manager.lock().unwrap();
+    let mut ledger = state.ledger.lock().unwrap();
+    let keystore_map = state.mock_keystore.lock().unwrap();
+
+    if recipient_ids.is_empty() {
+        return Err("No recipients selected".to_string());
+    }
+
+    let mut recipient_pub_keys = Vec::new();
+    for rid in &recipient_ids {
+        if let Some(user) = id_mgr.users.get(rid) {
+            if let Some(ref pub_id) = user.cryptographic_identity {
+                recipient_pub_keys.push(pub_id.clone());
+            } else {
+                return Err(format!("User {} has no cryptographic identity", rid));
+            }
+        } else {
+            return Err(format!("User {} not found", rid));
+        }
+    }
 
     let document_data = content.as_bytes();
     let (metadata, _encrypted_doc, _wrapped_keys, _recipient_packages) =
         distribute_document(document_data, Classification::Secret, &recipient_pub_keys)
             .map_err(|_e| format!("Crypto Error"))?;
 
-    // Now, simulate the user decrypting it and generating the attestation.
+    // Simulate the first user decrypting it and generating the attestation (for demo)
+    let recipient_id = &recipient_ids[0];
     let nonce = b"random_nonce_123";
     let event_id = ForensicsManager::generate_event_id(
         &metadata.document_hash,
-        &recipient_id,
+        recipient_id,
         "SESSION-1",
         nonce,
     );
 
-    let k = keystore_map.get(&recipient_id).unwrap();
+    let k = keystore_map.get(recipient_id).unwrap();
     let attestation = ForensicsManager::generate_attestation(
         event_id.clone(),
         metadata.document_hash.clone(),
@@ -91,15 +162,7 @@ fn verify_leak(
     state: State<'_, AppState>,
 ) -> Result<ForensicReport, String> {
     let ledger = state.ledger.lock().unwrap();
-    // For this POC we'll skip DSA signature verification by passing a dummy pub key, or we can just bypass it in the service if it's too complex.
-    // Wait, the service requires the exact DSA public key to verify it.
-    // Let's just create a dummy one and pass it, it will fail signature validation but still show the event ID.
-    // Actually, we can get the pub key from identity_manager if we stored the user!
-
     let id_mgr = state.identity_manager.lock().unwrap();
-    // Find the user who leaked it (just search all users for the POC)
-    // But verify_leaked_document requires us to pass the pubkey...
-    // Let's modify verify_leaked_document in the future, but for now just grab any user's pubkey.
 
     let mut dsa_pub = None;
     for (_id, user) in id_mgr.users.iter() {
@@ -135,6 +198,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             get_system_status,
+            get_users,
+            register_user,
             distribute,
             verify_leak
         ])
